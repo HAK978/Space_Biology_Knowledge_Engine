@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaPaperPlane, FaRobot, FaUser, FaTimes } from 'react-icons/fa';
+import { FaPaperPlane, FaFlask, FaUser, FaTimes, FaGraduationCap } from 'react-icons/fa';
 import { askGemini } from '../services/geminiService';
 
 const Chatbot = ({ paperId, paperTitle }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
-    { role: 'system', content: `Welcome! I'm your research assistant. Ask me anything about "${paperTitle}".` }
+    { role: 'system', content: `AI Research Analysis Assistant\n\nI can help you analyze and understand: "${paperTitle}"\n\nAsk me about methodology, findings, implications, or related research.` }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -48,68 +48,85 @@ const Chatbot = ({ paperId, paperTitle }) => {
   return (
     <>
       {/* Chat button */}
-      <button 
+      <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-lg hover:shadow-indigo-500/30 transition-all z-50"
+        className="fixed bottom-6 right-6 w-16 h-16 rounded-lg bg-gradient-to-br from-indigo-900 via-purple-900 to-slate-900 text-white flex items-center justify-center shadow-2xl shadow-purple-900/50 hover:shadow-purple-600/50 transition-all z-50 border border-purple-500/30"
       >
-        {isOpen ? <FaTimes size={18} /> : <FaRobot size={24} />}
+        {isOpen ? <FaTimes size={20} /> : <FaFlask size={28} />}
       </button>
 
       {/* Chat panel */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-96 h-[500px] bg-slate-800 border border-indigo-800/40 rounded-2xl shadow-2xl flex flex-col overflow-hidden z-50">
+        <div className="fixed bottom-24 right-6 w-[450px] h-[550px] bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 border border-purple-600/40 rounded-xl shadow-2xl shadow-purple-900/30 flex flex-col overflow-hidden z-50">
           {/* Header */}
-          <div className="bg-indigo-900/80 p-4 border-b border-indigo-800/40">
-            <div className="flex items-center space-x-2">
-              <FaRobot className="text-blue-300" />
-              <h3 className="text-white font-medium">Research Assistant</h3>
+          <div className="bg-gradient-to-r from-indigo-900/90 via-purple-900/90 to-indigo-900/90 backdrop-blur-md p-4 border-b border-purple-500/30">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-purple-600/20 rounded-lg border border-purple-500/30">
+                  <FaGraduationCap className="text-purple-300" size={20} />
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold text-base">AI Research Analyst</h3>
+                  <p className="text-purple-300 text-xs">Academic Paper Analysis</p>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Messages area */}
-          <div className="flex-grow p-4 overflow-y-auto space-y-4 bg-slate-900/50">
+          <div className="flex-grow p-5 overflow-y-auto space-y-5 bg-slate-950/80">
             {messages.map((message, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div className={`
-                  chat-message max-w-[80%] rounded-2xl py-2 px-4 
-                  ${message.role === 'user' 
-                    ? 'bg-blue-700 text-white rounded-tr-none' 
-                    : 'bg-slate-700 text-gray-200 rounded-tl-none'
-                  }
-                `}>
-                  <div className="flex items-center mb-1 text-xs opacity-70">
-                    {message.role === 'user' ? (
-                      <>
-                        <span>You</span>
-                        <FaUser className="ml-1" size={10} />
-                      </>
-                    ) : (
-                      <>
-                        <FaRobot className="mr-1" size={10} />
-                        <span>Assistant</span>
-                      </>
-                    )}
+                {message.role === 'system' && (
+                  <div className="flex items-start space-x-3 max-w-[90%]">
+                    <div className="flex-shrink-0 p-2 bg-gradient-to-br from-purple-600/30 to-indigo-600/30 rounded-lg border border-purple-500/40">
+                      <FaGraduationCap className="text-purple-300" size={16} />
+                    </div>
+                    <div className="bg-gradient-to-br from-slate-800/90 to-indigo-900/40 border border-purple-500/20 text-gray-100 rounded-xl rounded-tl-sm py-3 px-4 shadow-lg">
+                      <div className="flex items-center mb-2 text-xs text-purple-300 font-semibold">
+                        <span>AI Analyst</span>
+                      </div>
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                    </div>
                   </div>
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
-                </div>
+                )}
+                {message.role === 'user' && (
+                  <div className="flex items-start space-x-3 max-w-[90%]">
+                    <div className="bg-gradient-to-br from-blue-600 to-indigo-600 border border-blue-400/30 text-white rounded-xl rounded-tr-sm py-3 px-4 shadow-lg">
+                      <div className="flex items-center justify-end mb-2 text-xs text-blue-200 font-semibold">
+                        <span>You</span>
+                      </div>
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+                    </div>
+                    <div className="flex-shrink-0 p-2 bg-gradient-to-br from-blue-600/30 to-indigo-600/30 rounded-lg border border-blue-400/40">
+                      <FaUser className="text-blue-300" size={16} />
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-slate-700 text-gray-200 max-w-[80%] rounded-2xl rounded-tl-none py-2 px-4">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
-                    <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse delay-75"></div>
-                    <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse delay-150"></div>
+                <div className="flex items-start space-x-3 max-w-[90%]">
+                  <div className="flex-shrink-0 p-2 bg-gradient-to-br from-purple-600/30 to-indigo-600/30 rounded-lg border border-purple-500/40">
+                    <FaGraduationCap className="text-purple-300" size={16} />
+                  </div>
+                  <div className="bg-gradient-to-br from-slate-800/90 to-indigo-900/40 border border-purple-500/20 text-gray-100 rounded-xl rounded-tl-sm py-3 px-4 shadow-lg">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></div>
+                      <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse delay-75"></div>
+                      <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse delay-150"></div>
+                      <span className="text-xs text-purple-300 ml-2">Analyzing...</span>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
             {error && (
-              <div className="bg-red-900/20 text-red-200 p-2 rounded-lg text-sm text-center">
+              <div className="bg-red-900/30 border border-red-500/30 text-red-200 p-3 rounded-lg text-sm text-center">
                 {error}
               </div>
             )}
@@ -117,22 +134,22 @@ const Chatbot = ({ paperId, paperTitle }) => {
           </div>
 
           {/* Input area */}
-          <form onSubmit={handleSendMessage} className="bg-slate-800 border-t border-indigo-800/40 p-3">
-            <div className="flex">
+          <form onSubmit={handleSendMessage} className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border-t border-purple-500/30 p-4">
+            <div className="flex space-x-2">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 disabled={isLoading}
-                placeholder="Ask about this research..."
-                className="flex-grow py-2 px-4 bg-slate-700 text-white rounded-l-lg focus:outline-none border-y border-l border-indigo-600/30"
+                placeholder="Ask about methodology, findings, implications..."
+                className="flex-grow py-3 px-4 bg-slate-800/80 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/50 border border-purple-600/30 placeholder-gray-500 text-sm"
               />
-              <button 
-                type="submit" 
-                disabled={isLoading || !input.trim()} 
-                className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-600 text-white px-4 rounded-r-lg flex items-center justify-center transition"
+              <button
+                type="submit"
+                disabled={isLoading || !input.trim()}
+                className="bg-gradient-to-br from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 disabled:from-slate-700 disabled:to-slate-700 text-white px-5 rounded-lg flex items-center justify-center transition-all shadow-lg disabled:shadow-none border border-purple-500/30"
               >
-                <FaPaperPlane size={14} />
+                <FaPaperPlane size={16} />
               </button>
             </div>
           </form>

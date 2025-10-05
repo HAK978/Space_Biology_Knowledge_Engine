@@ -4,8 +4,9 @@ import { motion } from 'framer-motion';
 import { FaArrowLeft, FaSpinner, FaChartLine, FaBrain, FaNetworkWired, FaLightbulb, FaFileAlt } from 'react-icons/fa';
 import PaperSummary from '../components/PaperSummary';
 import Chatbot from '../components/Chatbot';
-import { fetchPaperById } from '../services/api';
-import ResearchVisualizer from '../components/ResearchVisualizer';
+import PaperChatbot from '../components/PaperChatbot';
+import { fetchPaperById } from '../services/apiWrapper';
+import ImprovedKnowledgeGraph from '../components/ImprovedKnowledgeGraph';
 
 const PaperDetail = () => {
   const { id } = useParams();
@@ -445,10 +446,10 @@ const PaperDetail = () => {
             </div>
 
             {/* Knowledge Graph Visualization */}
-            <div className="h-[500px] mb-6 bg-slate-900/40 rounded-xl border border-indigo-800/20 overflow-hidden">
-              <ResearchVisualizer 
-                papers={relatedPapers} 
-                activePaperId={parseInt(id)} 
+            <div className="mb-6">
+              <ImprovedKnowledgeGraph
+                papers={relatedPapers}
+                activePaperId={id}
                 mode={graphMode}
               />
             </div>

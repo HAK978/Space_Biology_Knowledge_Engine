@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import PaperTile from '../components/PaperTile';
+import TimelineVisualization from '../components/TimelineVisualization';
 import { FaFilter, FaSpinner, FaStar } from 'react-icons/fa';
-import { fetchPapers } from '../services/api';
+import { fetchPapers } from '../services/apiWrapper';
 
 // Generate random stars for background
 const generateStars = (count) => {
@@ -22,32 +23,62 @@ const generateStars = (count) => {
 
 const Home = () => {
   const [papers, setPapers] = useState([]);
+  const [allPapers, setAllPapers] = useState([]); // Store all papers for timeline
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('recent');
   const location = useLocation();
   const [stars] = useState(() => generateStars(50));
 
-  // Category options - updated to match the actual categories in the data
+  // Category options
   const categories = [
     { id: 'all', name: 'All Papers' },
-    { id: 'health', name: 'Health & Medicine' },
-    { id: 'engineering', name: 'Engineering & Technology' },
-    { id: 'astrobiology', name: 'Astrobiology' },
-    { id: 'biotechnology', name: 'Biotechnology' }
+    { id: 'Health & Medicine', name: 'Health & Medicine' },
+    { id: 'Biotechnology', name: 'Biotechnology' },
+    { id: 'Plant Biology', name: 'Plant Biology' },
+    { id: 'Cellular Biology', name: 'Cellular Biology' },
+    { id: 'Radiation', name: 'Radiation' },
+    { id: 'General', name: 'General' }
   ];
 
+  // Load all papers once for timeline
+  useEffect(() => {
+    const loadAllPapers = async () => {
+      try {
+        const data = await fetchPapers(null, null); // Get all papers without filters
+        setAllPapers(data);
+      } catch (error) {
+        console.error('Error loading all papers:', error);
+      }
+    };
+    loadAllPapers();
+  }, []);
+
+  // Load filtered/sorted papers for display
   useEffect(() => {
     const loadPapers = async () => {
       setLoading(true);
       try {
-        // Extract search query if present
         const searchParams = new URLSearchParams(location.search);
         const searchTerm = searchParams.get('search');
-        
-        // Map 'all' to null, otherwise use the filter value
+
         const categoryFilter = activeFilter === 'all' ? null : activeFilter;
-        
-        const data = await fetchPapers(searchTerm, categoryFilter);
+
+        let data = await fetchPapers(searchTerm, categoryFilter);
+
+        // Apply sorting
+        if (sortBy === 'citations') {
+          data = data.sort((a, b) => (b.citations || 0) - (a.citations || 0));
+        } else if (sortBy === 'title') {
+          data = data.sort((a, b) => a.title.localeCompare(b.title));
+        } else if (sortBy === 'recent') {
+          data = data.sort((a, b) => {
+            const dateA = a.publicationDate ? new Date(a.publicationDate) : new Date(0);
+            const dateB = b.publicationDate ? new Date(b.publicationDate) : new Date(0);
+            return dateB - dateA;
+          });
+        }
+
         setPapers(data);
       } catch (error) {
         console.error('Error loading papers:', error);
@@ -55,17 +86,17 @@ const Home = () => {
         setLoading(false);
       }
     };
-    
+
     loadPapers();
-  }, [location.search, activeFilter]);
+  }, [location.search, activeFilter, sortBy]);
 
   return (
     <div className="relative">
       {/* Stars background */}
       {stars.map(star => (
-        <div 
+        <div
           key={star.id}
-          className="star" 
+          className="star"
           style={{
             width: `${star.size}px`,
             height: `${star.size}px`,
@@ -75,14 +106,15 @@ const Home = () => {
           }}
         />
       ))}
-      
-      <motion.div 
+
+      <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
+        {/* Header */}
         <div className="text-center mb-12 mt-4">
-          <motion.h1 
+          <motion.h1
             className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-300 to-purple-400"
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -90,7 +122,7 @@ const Home = () => {
           >
             NASA Bioscience Research Explorer
           </motion.h1>
-          <motion.p 
+          <motion.p
             className="text-gray-300 max-w-3xl mx-auto text-lg"
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -100,27 +132,49 @@ const Home = () => {
           </motion.p>
         </div>
 
-        {/* Filter tabs */}
-        <div className="mb-8 overflow-x-auto">
-          <div className="flex space-x-2 min-w-max pb-2">
-            <div className="flex items-center mr-2 text-indigo-300">
-              <FaFilter className="mr-2" />
-              <span className="text-sm">Filter:</span>
-            </div>
-            
+        {/* Timeline Visualization - Show all 572 papers */}
+        <div className="mb-12">
+          <TimelineVisualization papers={allPapers} />
+        </div>
+
+        {/* Filter and Sort */}
+        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          {/* Filter tabs */}
+          <div className="overflow-x-auto">
+            <div className="flex space-x-2 min-w-max pb-2">
+              <div className="flex items-center mr-2 text-indigo-300">
+                <FaFilter className="mr-2" />
+                <span className="text-sm">Filter:</span>
+              </div>
+
             {categories.map(category => (
               <button
                 key={category.id}
                 onClick={() => setActiveFilter(category.id)}
                 className={`px-4 py-2 rounded-full text-sm transition-all ${
-                  activeFilter === category.id 
-                    ? 'bg-blue-600 text-white' 
+                  activeFilter === category.id
+                    ? 'bg-blue-600 text-white'
                     : 'bg-slate-800/60 text-gray-300 hover:bg-slate-700/60'
                 }`}
               >
                 {category.name}
               </button>
             ))}
+          </div>
+        </div>
+
+          {/* Sort options */}
+          <div className="flex items-center space-x-2">
+            <span className="text-sm text-indigo-300">Sort by:</span>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="px-3 py-2 bg-slate-800/60 text-white border border-indigo-800/30 rounded-lg text-sm focus:outline-none focus:border-indigo-600/50"
+            >
+              <option value="recent">Most Recent</option>
+              <option value="citations">Most Cited</option>
+              <option value="title">Title (A-Z)</option>
+            </select>
           </div>
         </div>
 
