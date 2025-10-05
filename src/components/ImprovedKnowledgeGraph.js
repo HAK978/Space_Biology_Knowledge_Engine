@@ -200,6 +200,12 @@ const ImprovedKnowledgeGraph = ({ papers, activePaperId, mode = 'connections' })
 
   // Enhanced paint node with glow effects
   const paintNode = useCallback((node, ctx, globalScale) => {
+    // Safety check for valid coordinates
+    if (!node || typeof node.x !== 'number' || typeof node.y !== 'number' ||
+        !isFinite(node.x) || !isFinite(node.y) || !node.val || !isFinite(node.val)) {
+      return;
+    }
+
     const label = node.name;
     const fontSize = 11 / globalScale;
     const isHighlighted = highlightNodes.has(node.id) || node.id === hoverNode?.id;
@@ -276,6 +282,15 @@ const ImprovedKnowledgeGraph = ({ papers, activePaperId, mode = 'connections' })
 
   // Paint links
   const paintLink = useCallback((link, ctx, globalScale) => {
+    // Safety check for valid link coordinates
+    if (!link || !link.source || !link.target ||
+        typeof link.source.x !== 'number' || typeof link.source.y !== 'number' ||
+        typeof link.target.x !== 'number' || typeof link.target.y !== 'number' ||
+        !isFinite(link.source.x) || !isFinite(link.source.y) ||
+        !isFinite(link.target.x) || !isFinite(link.target.y)) {
+      return;
+    }
+
     const isHighlighted = highlightLinks.has(link);
 
     ctx.strokeStyle = isHighlighted

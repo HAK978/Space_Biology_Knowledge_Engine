@@ -45,12 +45,17 @@ async function scrapePMCArticle(pmcUrl) {
 
     // Extract publication date
     let publicationDate = null;
-    const dateText = $('.fm-vol-iss-date').text().trim() ||
+    const dateText = $('meta[name="citation_publication_date"]').attr('content') ||
+                     $('meta[name="citation_date"]').attr('content') ||
+                     $('.fm-vol-iss-date').text().trim() ||
                      $('.publication-date').text().trim() ||
-                     $('meta[name="citation_date"]').attr('content');
+                     $('.pub-date').text().trim();
 
     if (dateText) {
-      publicationDate = new Date(dateText);
+      const parsedDate = new Date(dateText);
+      if (!isNaN(parsedDate.getTime())) {
+        publicationDate = parsedDate;
+      }
     }
 
     // Extract metadata
